@@ -2,7 +2,7 @@ name: LeetCode Daily Update
 
 on:
   schedule:
-    # 11:50 PM IST = 6:20 PM UTC
+    # Runs every day at 11:50 PM IST (18:20 UTC)
     - cron: "20 18 * * *"
 
   workflow_dispatch:
@@ -12,14 +12,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # Checkout repository
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      # Setup Python
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
+      # Install dependencies
       - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
@@ -29,13 +32,31 @@ jobs:
           pip install google-auth
           pip install google-auth-oauthlib
 
+      # Create credentials.json from Base64 secret
       - name: Create credentials.json
         run: |
-          echo '${{ secrets.GOOGLE_CREDENTIALS }}' > credentials.json
+          echo "${{ secrets.GOOGLE_CREDENTIALS }}" | base64 --decode > credentials.json
 
+      # Verify credentials.json (Temporary - remove after first successful run)
+      - name: Verify credentials
+        run: |
+          echo "Current Directory:"
+          pwd
+          echo ""
+          echo "Files:"
+          ls -la
+          echo ""
+          echo "credentials.json size:"
+          wc -c credentials.json
+          echo ""
+          echo "First line:"
+          head -1 credentials.json
+
+      # Run your tracker
       - name: Run Daily Update
         run: |
           python daily_update_v2.py
 
-      - name: Finished
+      # Success message
+      - name: Completed
         run: echo "✅ Daily LeetCode Tracker Completed Successfully"
